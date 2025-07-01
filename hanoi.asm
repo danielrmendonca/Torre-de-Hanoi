@@ -25,7 +25,7 @@ erro_len equ $-erro
 
 resposta db "Algoritmo de resolução da Torre de Hanoi para "
 qtd_discos db " "
-resposta2 db " disco(s)"
+resposta2 db " disco(s)", 0xA, 0
 resposta_len equ $-resposta
 
 ; Mensagem output
@@ -44,9 +44,9 @@ TORRE_C equ 3
 
 section .bss
 
-entrada resb 2
+entrada resb 2              ; Número e a quebra de linha
 
-digito_para_imprimir resb 1 ; Para debuggar
+digito_para_imprimir resb 1 ; Para print e debuggar
 
 section .text
     global _start
@@ -67,6 +67,10 @@ mov ecx, entrada
 mov edx, 1          ; Apenas o número de discos na entrada
 int 0x80
 
+mov eax, entrada
+add eax, '0'
+mov [qtd_discos], al
+
 ; Converter string
 call string_para_int
 ; Quantidade de discos int em eax
@@ -85,7 +89,10 @@ mov ebx, 0x1
 mov ecx, conclusao
 mov edx, conclusao_len
 int 0x80
-call 0x1
+
+mov eax, 0x1
+mov ebx, 0
+int 0x80
 
 ; ----------DEBUGGER----------
 ;  add eax, '0' ; Converte para string novamente
@@ -175,9 +182,7 @@ call saida
 string_para_int:
 mov al, [entrada]
 cmp al, '1'             ; Compara o valor em al com 1
-jl erro_conversao       ; Jump if less
-cmp al, '9'             ; Compara o valor em al com 9
-jg erro_conversao       ; Jump if greater
+jl erro_conversao       ; Jump if less (Se for 0, entrada inválida)
 ; Entrada válida
 sub al, '0'             ; Converte para inteiro
 movzx eax, al           ; Carrega o valor em eax garantindo que seja sobreescrito
